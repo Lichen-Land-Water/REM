@@ -260,6 +260,7 @@ if __name__ == "__main__":
     out_class_raster = r"C:\L\Lichen\Lichen - Documents\Marketing\Proposals\Luck Creek\REMs\REM\jc bankfull thresholds 3 classes.tif"
     out_polygons = r"C:\L\Lichen\Lichen - Documents\Marketing\Proposals\Luck Creek\REMs\REM\jc bankfull thresholds 3 classes.gpkg"
 
+    # THresholds refer to multiples of bankfull stage (e.g., 0.5 = half bankfull, 1 = bankfull, 2 = double bankfull)
     thresholds = [0.5, 1, 2]  # anything > 2x becomes nodata/unclassified
 
     classify_rem_by_bankfull(

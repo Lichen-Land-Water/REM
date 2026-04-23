@@ -131,7 +131,7 @@ def _to_source_crs(gdf: gpd.GeoDataFrame, back_crs: Optional[CRS]) -> gpd.GeoDat
 # Main function
 # ---------------------------
 
-def create_bendy_transects_smooth(
+def create_transects_smooth(
     input_gpkg: str,
     output_gpkg: str,
     input_layer: Optional[str] = None,
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     window = 1000.0
 
     out_path = r"C:\L\Lichen\Lichen - Documents\Projects\20240001.4_Tucan 5-15 (CTUIR)\07_GIS\Wenaha\Tucannon REM\transects.gpkg"
-    create_bendy_transects_smooth(
+    create_ransects_smooth(
         input_gpkg=streams_gpkg,
         output_gpkg=out_path,
         input_layer=input_layer,
