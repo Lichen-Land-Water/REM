@@ -40,6 +40,11 @@ Based on the repository scripts, the workflow uses:
 Installation:
 
 ```bash
+conda env create -f rem_environment.yml
+```
+Or if that doesn't work, try to let conda solve the environments itself:
+
+```bash
 conda install geopandas numpy shapely pyproj rasterio fiona rasterstats whitebox whitebox-workflows scikit-learn
 ```
 
