@@ -131,13 +131,16 @@ def _to_source_crs(gdf: gpd.GeoDataFrame, back_crs: Optional[CRS]) -> gpd.GeoDat
 # Main function
 # ---------------------------
 
-def create_transects_smooth(
+def create_transects(
     input_gpkg: str,
     output_gpkg: str,
+    DA_field: str = "DA_km2",
     input_layer: Optional[str] = None,
     output_layer: Optional[str] = None,
     spacing: float = 100.0,
     window: float = 200.0,
+    trans_power = 1/3,
+    trans_multiplier = 100.0,
 ) -> str:
     """
     Create de-conflicted transects that use a smoothed perpendicular orientation,
@@ -157,11 +160,11 @@ def create_transects_smooth(
     gdf = gpd.read_file(input_gpkg, layer=input_layer)
     gdf = _ensure_make_valid(gdf)
 
-    if "DA_km2" not in gdf.columns:
-        gdf["DA_km2"] = np.nan
+    if DA_field not in gdf.columns:
+        raise ValueError(f"DA_field '{DA_field}' not found in input data columns: {gdf.columns.tolist()}")
 
     gdf_proj, back_crs = _project_for_linear_ops(gdf)
-    gdf_proj = gdf_proj.sort_values("DA_km2", ascending=False)
+    gdf_proj = gdf_proj.sort_values(DA_field, ascending=False)
 
     existing: list[LineString] = []
     rows_out = []
@@ -172,11 +175,11 @@ def create_transects_smooth(
         if L <= 0:
             continue
 
-        da_km2 = row.get("DA_km2", np.nan)
+        da_km2 = row.get(DA_field, np.nan)
         if da_km2 is None or np.isnan(da_km2) or da_km2 <= 0:
             continue
 
-        transect_length = (float(da_km2) ** (1/3)) * 200.0
+        transect_length = (float(da_km2) ** (trans_power)) * trans_multiplier
         half = transect_length / 2.0
 
         d = 0.0
@@ -218,7 +221,7 @@ def create_transects_smooth(
                     "geometry": chosen,
                     "station": _format_station(d),
                     "centerline_id": idx,
-                    "DA_km2": da_km2,
+                    f"{DA_field}": da_km2,
                     "transect_length_m": transect_length,
                     "BF_width_Legg_m": row.get("BF_width_Legg_m"),
                     "BF_depth_Legg_m": row.get("BF_depth_Legg_m"),
@@ -232,7 +235,7 @@ def create_transects_smooth(
     out_gdf = gpd.GeoDataFrame(rows_out, crs=gdf_proj.crs)
     out_gdf = _to_source_crs(out_gdf, back_crs)
 
-    out_layer = output_layer or "transects_bendy_smooth"
+    out_layer = output_layer or "transects"
     out_gdf.to_file(output_gpkg, layer=out_layer, driver="GPKG")
 
     print(
@@ -243,17 +246,20 @@ def create_transects_smooth(
 
 
 if __name__ == "__main__":
-    streams_gpkg = r"C:\L\Lichen\Lichen - Documents\Projects\20240001.4_Tucan 5-15 (CTUIR)\07_GIS\Wenaha\Tucannon REM\tucannon_centerline.gpkg"
+    streams_gpkg = r"C:\L\Lichen\Lichen - Documents\Projects\20260003_Owens-Snipe Assessment (UCSWCD)\07_GIS\1_Analysis\Stream Network Analysis\Streams\1m_test\streams_0p75km2.gpkg"
     input_layer = None
-    spacing = 300
+    spacing = 100 # in meters, regardless of source CRS units
     window = 1000.0
 
-    out_path = r"C:\L\Lichen\Lichen - Documents\Projects\20240001.4_Tucan 5-15 (CTUIR)\07_GIS\Wenaha\Tucannon REM\transects.gpkg"
-    create_ransects_smooth(
+    out_path = r"C:\L\Lichen\Lichen - Documents\Projects\20260003_Owens-Snipe Assessment (UCSWCD)\07_GIS\1_Analysis\Stream Network Analysis\REM\transects.gpkg"
+    create_transects(
         input_gpkg=streams_gpkg,
         output_gpkg=out_path,
+        DA_field="DA_sqmi",
         input_layer=input_layer,
         output_layer="transects",
         spacing=spacing,
         window=window,
+        trans_power=0.52,
+        trans_multiplier=200.0,
     )

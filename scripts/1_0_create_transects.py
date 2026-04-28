@@ -273,7 +273,7 @@ def create_bendy_transects_smooth(
 if __name__ == "__main__":
     streams_gpkg = r"C:\L\Lichen\Lichen - Documents\Marketing\Proposals\CTUIR Hidaway Creek\REM\Streams\streams_3km2.gpkg"
     input_layer = None 
-    spacing = 100
+    spacing = 100 # meters, regardless of CRS units
     transect_length = 300
     window = 500.0
 
